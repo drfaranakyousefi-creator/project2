@@ -10,7 +10,15 @@ class Transmitter :
             N = 4
         else : 
             N = 5    
-        self.model = prediction_net(w, n_features_input=N, lr=0.01)
+        self.model = prediction_net(
+                                        w=w,
+                                        n_features_input=N,
+                                        n_input_caps=4,
+                                        n_output_caps=3,
+                                        in_caps_dim=6,
+                                        out_caps_dim=8,
+                                        lr=0.01
+                                    )
         self.device = device 
     def data_to_json(self ,  x , label ,  status)  : # x and the labels are both tensors
         x_copy = x.detach().cpu().tolist()
@@ -47,6 +55,7 @@ class Transmitter :
         elif status == 'test' :
             prediction = torch.tensor(data_recive_in_client['prediction']).to(self.device)
             return  prediction
+
 
 
 
