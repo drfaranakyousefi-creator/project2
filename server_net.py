@@ -77,7 +77,7 @@ class prediction_net(nn.Module):
         self.primary_caps = primary_capsules(n_input_caps ,n_input_caps*in_caps_dim )
         self.secoundary_caps = secoundary_capsules(n_input_caps , n_output_caps , in_caps_dim , out_caps_dim , n_routing)
         self.final_layer = nn.Linear(n_output_caps*out_caps_dim , 1)
-    def forward(self , x ) : 
+    def prediction(self , x ) : 
         #x : (batch , w +N)
         batch_size  , _= x.shape
         x = self.layer1(x)
@@ -89,5 +89,23 @@ class prediction_net(nn.Module):
         x = x.reshape(batch_size , -1)
         x = self.final_layer(x)
         return x 
+    def forward(self, combined_embedded, label=None, status='test'):
+        combined_embedded = torch.tensor(combined_embedded, dtype=torch.float, device=self.device)
+        combined_embedded.requires_grad_(True)
 
+        if status == 'train':
+            label = torch.tensor(label, dtype=torch.float, device=self.device)
+            self.optimizer.zero_grad()
+            output = self.prediction(combined_embedded)
+            loss = self.loss_fn(output, label)
+            loss.backward()
+            input_grad = combined_embedded.grad.detach().cpu().tolist()
+            self.optimizer.step()
+            result = {'grad' : input_grad}
+            return result
+        else:  # test
+            output = self.prediction(combined_embedded)
+            result = output.detach().cpu().tolist()
+            result = {'prediction': result}
+            return result
 
