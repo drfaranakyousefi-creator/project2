@@ -77,6 +77,9 @@ class prediction_net(nn.Module):
         self.primary_caps = primary_capsules(n_input_caps ,n_input_caps*in_caps_dim )
         self.secoundary_caps = secoundary_capsules(n_input_caps , n_output_caps , in_caps_dim , out_caps_dim , n_routing)
         self.final_layer = nn.Linear(n_output_caps*out_caps_dim , 1)
+
+        self.loss_fn = nn.MSELoss()
+        self.optimizer = optim.Adam(self.parameters(), lr=lr)
     def prediction(self , x ) : 
         #x : (batch , w +N)
         batch_size  , _= x.shape
